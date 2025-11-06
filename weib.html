@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>微博 - 发现新鲜事</title>
+  <!-- 引入外部资源 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1DA1F2',
+            secondary: '#657786',
+            light: '#F5F8FA',
+            dark: '#14171A'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .scrollbar-hide {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .card-hover {
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      .card-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      .scale-in {
+        animation: scaleIn 0.3s ease forwards;
+      }
+      @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-light text-dark font-sans">
+  <!-- 导航栏 -->
+  <header class="sticky top-0 z-50 bg-white shadow-sm transition-all duration-300" id="navbar">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center">
+        <a href="#" class="text-primary text-3xl font-bold mr-2">
+          <i class="fa fa-weibo"></i>
+        </a>
+        <h1 class="text-xl font-bold hidden md:block">微博</h1>
+      </div>
+      
+      <!-- 搜索栏 -->
+      <div class="hidden md:block flex-grow max-w-xl mx-8">
+        <div class="relative">
+          <input type="text" placeholder="搜索微博、用户..." 
+                 class="w-full py-2 px-4 pl-10 rounded-full bg-light focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all">
+          <i class="fa fa-search absolute left-4 top-1/2 -translate-y-1/2 text-secondary"></i>
+        </div>
+      </div>
+      
+      <!-- 导航菜单 -->
+      <nav class="flex items-center space-x-1 md:space-x-4">
+        <button class="md:hidden text-xl p-2 rounded-full hover:bg-light transition-colors">
+          <i class="fa fa-search"></i>
+        </button>
+        <a href="#" class="text-xl p-2 rounded-full hover:bg-light transition-colors relative">
+          <i class="fa fa-home"></i>
+          <span class="hidden md:inline-block ml-1">首页</span>
+        </a>
+        <a href="#" class="text-xl p-2 rounded-full hover:bg-light transition-colors relative">
+          <i class="fa fa-bell-o"></i>
+          <span class="hidden md:inline-block ml-1">通知</span>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+        </a>
+        <a href="#" class="text-xl p-2 rounded-full hover:bg-light transition-colors">
+          <i class="fa fa-envelope-o"></i>
+          <span class="hidden md:inline-block ml-1">私信</span>
+        </a>
+        <div class="relative group">
+          <button class="flex items-center space-x-1 p-1 rounded-full hover:bg-light transition-colors">
+            <img src="https://picsum.photos/200/200?random=1" alt="用户头像" class="w-8 h-8 rounded-full object-cover border-2 border-primary">
+            <span class="hidden md:inline-block font-medium">我的账号</span>
+            <i class="fa fa-chevron-down text-xs hidden md:block"></i>
+          </button>
+          <!-- 下拉菜单 -->
+          <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right scale-95 group-hover:scale-100">
+            <a href="#" class="block px-4 py-2 hover:bg-light transition-colors">
+              <i class="fa fa-user-o mr-2"></i>个人主页
+            </a>
+            <a href="#" class="block px-4 py-2 hover:bg-light transition-colors edit-profile-btn">
+              <i class="fa fa-cog mr-2"></i>编辑资料
+            </a>
+            <div class="border-t my-1"></div>
+            <a href="#" class="block px-4 py-2 hover:bg-light transition-colors text-red-500">
+              <i class="fa fa-sign-out mr-2"></i>退出登录
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 主要内容区 -->
+  <main class="container mx-auto px-4 py-6 flex flex-col md:flex-row gap-6">
+    <!-- 左侧边栏 - 个人信息 -->
+     <aside class="md:w-64 lg:w-80 flex-shrink-0">
+      <div class="sticky top-24 bg-white rounded-xl shadow-sm overflow-hidden">
+        <!-- 封面图区域 -->
+        <div class="h-32 bg-gradient-to-r from-primary to-blue-400 relative mb-3 ">
+          <button class="absolute bottom-3 right-3 bg-white/80 hover:bg-white text-primary rounded-full p-2 transition-colors change-cover-btn">
+            <i class="fa fa-camera"></i>
+          </button>
+        </div>
+        
+        <!-- 个人信息 -->
+         <div class="px-6 pb-6 pt-[-3.8rem]">
+          <div class="relative">
+            <img src="https://picsum.photos/200/200?random=1" alt="用户头像" class="w-20 h-20 rounded-full object-cover border-4 border-white mb-2 profile-avatar">
+            <button class="absolute bottom-0 right-0 bg-primary text-white rounded-full p-1 border-2 border-white change-avatar-btn">
+              <i class="fa fa-camera text-xs"></i>
+            </button>
+          </div>
+          <h2 class="font-bold text-xl profile-name">张小明</h2>
+          <p class="text-secondary text-sm mb-4">@zhangxiaoming · 加入于2018年</p>
+          
+          <!-- 个人简介 -->
+          <p class="text-sm mb-4 profile-bio">热爱生活，喜欢旅行和摄影，分享美好生活瞬间。</p>
+          
+          <!-- 统计数据 -->
+          <div class="flex justify-between text-center mb-4">
+            <div>
+              <p class="font-bold">286</p>
+              <p class="text-secondary text-sm">关注</p>
+            </div>
+            <div>
+              <p class="font-bold">1.2k</p>
+              <p class="text-secondary text-sm">粉丝</p>
+            </div>
+            <div>
+              <p class="font-bold">3.5k</p>
+              <p class="text-secondary text-sm">微博</p>
+            </div>
+          </div>
+          
+          <button class="w-full bg-primary hover:bg-primary/90 text-white py-2 rounded-full transition-colors edit-profile-btn">
+            编辑资料
+          </button>
+        </div>
+      </div>
+      
+      <!-- 推荐关注 -->
+      <div class="sticky top-[calc(24rem+1rem)] bg-white rounded-xl shadow-sm p-4 mt-6">
+        <h3 class="font-bold text-lg mb-4">推荐关注</h3>
+        <div class="space-y-4">
+          <!-- 推荐用户1 -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <img src="https://picsum.photos/200/200?random=2" alt="推荐用户" class="w-10 h-10 rounded-full object-cover">
+              <div>
+                <p class="font-medium">科技前沿</p>
+                <p class="text-secondary text-sm">@techfront</p>
+              </div>
+            </div>
+            <button class="text-primary border border-primary hover:bg-primary/5 px-3 py-1 rounded-full text-sm transition-colors">
+              关注
+            </button>
+          </div>
+          
+          <!-- 推荐用户2 -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <img src="https://picsum.photos/200/200?random=3" alt="推荐用户" class="w-10 h-10 rounded-full object-cover">
+              <div>
+                <p class="font-medium">美食探店</p>
+                <p class="text-secondary text-sm">@foodexplorer</p>
+              </div>
+            </div>
+            <button class="text-primary border border-primary hover:bg-primary/5 px-3 py-1 rounded-full text-sm transition-colors">
+              关注
+            </button>
+          </div>
+        </div>
+        
+        <button class="w-full text-primary hover:text-primary/80 py-2 mt-2 text-sm transition-colors">
+          显示更多
+        </button>
+      </div>
+    </aside>
+    
+    <!-- 中间内容区 - 微博流 -->
+    <div class="flex-grow max-w-2xl mx-auto">
+      <!-- 发布微博框 -->
+      <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
+        <div class="flex space-x-3">
+          <img src="https://picsum.photos/200/200?random=1" alt="用户头像" class="w-10 h-10 rounded-full object-cover">
+          <div class="flex-grow">
+            <textarea placeholder="分享你的想法..." 
+                      class="w-full border border-gray-200 rounded-full p-3 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none h-20 post-content"></textarea>
+            
+            <!-- 发布工具 -->
+            <div class="flex justify-between items-center mt-3">
+              <div class="flex space-x-3 text-primary">
+                <label class="cursor-pointer p-2 rounded-full hover:bg-primary/10 transition-colors" title="图片">
+                  <i class="fa fa-picture-o"></i>
+                  <input type="file" accept="image/*" class="hidden camera-input">
+                </label>
+                <button class="p-2 rounded-full hover:bg-primary/10 transition-colors" title="视频">
+                  <i class="fa fa-video-camera"></i>
+                </button>
+                <button class="p-2 rounded-full hover:bg-primary/10 transition-colors" title="话题">
+                  <i class="fa fa-hashtag"></i>
+                </button>
+                <button class="p-2 rounded-full hover:bg-primary/10 transition-colors" title="表情">
+                  <i class="fa fa-smile-o"></i>
+                </button>
+              </div>
+              <button class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-full transition-colors font-medium post-btn">
+                发布
+              </button>
+            </div>
+            
+            <!-- 预览图片区域 -->
+            <div class="mt-3 preview-images flex flex-wrap gap-2 hidden"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 微博列表 -->
+      <div class="space-y-4" id="weibo-feed">
+        <!-- 微博1 - 纯文字 -->
+        <article class="bg-white rounded-xl shadow-sm p-4 card-hover" data-id="1">
+          <div class="flex space-x-3">
+            <img src="https://picsum.photos/200/200?random=4" alt="用户头像" class="w-10 h-10 rounded-full object-cover">
+            <div class="flex-grow">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="font-medium">旅行日记</h3>
+                  <p class="text-secondary text-sm">@travel_diary · 2小时前</p>
+                </div>
+                <button class="text-secondary hover:text-dark transition-colors">
+                  <i class="fa fa-ellipsis-h"></i>
+                </button>
+              </div>
+              
+              <div class="mt-2">
+                <p>今天去了郊外徒步，空气真的太好了！远离城市的喧嚣，感受大自然的美好，整个人都放松下来了。推荐大家有空也多出去走走，对身心都很有好处。</p>
+              </div>
+              
+              <div class="mt-3 flex justify-between text-secondary">
+                <button class="flex items-center space-x-1 hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10 comment-btn">
+                  <i class="fa fa-comment-o"></i>
+                  <span class="comment-count">42</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-green-500 transition-colors p-2 rounded-full hover:bg-green-500/10">
+                  <i class="fa fa-retweet"></i>
+                  <span>18</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-500/10 like-btn">
+                  <i class="fa fa-heart-o"></i>
+                  <span>126</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10">
+                  <i class="fa fa-share"></i>
+                </button>
+              </div>
+              
+              <!-- 评论区 -->
+              <div class="comments-container mt-4 border-t pt-4 hidden">
+                <div class="flex space-x-2 mb-4">
+                  <img src="https://picsum.photos/200/200?random=1" alt="用户头像" class="w-8 h-8 rounded-full object-cover">
+                  <div class="flex-grow">
+                    <input type="text" placeholder="添加评论..." class="w-full border border-gray-200 rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all text-sm comment-input">
+                  </div>
+                </div>
+                
+                <!-- 评论列表 -->
+                <div class="comments-list space-y-4">
+                  <!-- 评论1 -->
+                  <div class="flex space-x-2">
+                    <img src="https://picsum.photos/200/200?random=20" alt="评论用户" class="w-8 h-8 rounded-full object-cover">
+                    <div class="flex-grow bg-light rounded-xl p-3">
+                      <div class="flex justify-between">
+                        <h4 class="font-medium text-sm">户外爱好者</h4>
+                        <span class="text-secondary text-xs">1小时前</span>
+                      </div>
+                      <p class="text-sm mt-1">请问这是哪里呀？看起来环境真不错，想去看看！</p>
+                      <div class="flex space-x-4 mt-2">
+                        <button class="text-secondary hover:text-primary text-xs transition-colors reply-btn">回复</button>
+                        <button class="text-secondary hover:text-red-500 text-xs transition-colors comment-like-btn">点赞 (8)</button>
+                      </div>
+                      
+                      <!-- 回复框 (默认隐藏) -->
+                      <div class="mt-2 flex space-x-2 reply-container hidden">
+                        <img src="https://picsum.photos/200/200?random=1" alt="用户头像" class="w-6 h-6 rounded-full object-cover">
+                        <div class="flex-grow">
+                          <input type="text" placeholder="回复 @户外爱好者..." class="w-full border border-gray-200 rounded-full p-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all text-xs reply-input">
+                        </div>
+                      </div>
+                      
+                      <!-- 回复列表 -->
+                      <div class="mt-3 ml-6 space-y-3 replies-list">
+                        <div class="flex space-x-2">
+                          <img src="https://picsum.photos/200/200?random=4" alt="作者头像" class="w-6 h-6 rounded-full object-cover">
+                          <div class="flex-grow bg-white rounded-xl p-2">
+                            <p class="text-sm"><span class="font-medium">旅行日记</span> 回复 <span class="font-medium">户外爱好者</span>：这是在密云水库附近的徒步路线，导航搜"云蒙山徒步道"就能到～</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- 评论2 -->
+                  <div class="flex space-x-2">
+                    <img src="https://picsum.photos/200/200?random=21" alt="评论用户" class="w-8 h-8 rounded-full object-cover">
+                    <div class="flex-grow bg-light rounded-xl p-3">
+                      <div class="flex justify-between">
+                        <h4 class="font-medium text-sm">自然之子</h4>
+                        <span class="text-secondary text-xs">2小时前</span>
+                      </div>
+                      <p class="text-sm mt-1">确实，现在城市里的空气太差了，周末就应该多去郊外走走，呼吸新鲜空气。</p>
+                      <div class="flex space-x-4 mt-2">
+                        <button class="text-secondary hover:text-primary text-xs transition-colors reply-btn">回复</button>
+                        <button class="text-secondary hover:text-red-500 text-xs transition-colors comment-like-btn">点赞 (12)</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <button class="w-full text-primary hover:text-primary/80 py-2 mt-2 text-sm transition-colors load-more-comments">
+                  查看更多评论
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+        
+        <!-- 微博2 - 单张图片 -->
+        <article class="bg-white rounded-xl shadow-sm p-4 card-hover" data-id="2">
+          <div class="flex space-x-3">
+            <img src="https://picsum.photos/200/200?random=5" alt="用户头像" class="w-10 h-10 rounded-full object-cover">
+            <div class="flex-grow">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="font-medium">美食家</h3>
+                  <p class="text-secondary text-sm">@foodie · 昨天 18:30</p>
+                </div>
+                <button class="text-secondary hover:text-dark transition-colors">
+                  <i class="fa fa-ellipsis-h"></i>
+                </button>
+              </div>
+              
+              <div class="mt-2">
+                <p>今天尝试做了红烧肉，第一次做没想到这么成功！色泽红亮，肥而不腻，香气扑鼻，全家人都爱吃～ 做法放在评论区了，感兴趣的可以试试！#美食分享#</p>
+                
+                <!-- 单张图片 -->
+                <div class="mt-3 rounded-xl overflow-hidden cursor-pointer group">
+                  <img src="https://picsum.photos/800/600?random=10" alt="红烧肉" 
+                       class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105">
+                </div>
+              </div>
+              
+              <div class="mt-3 flex justify-between text-secondary">
+                <button class="flex items-center space-x-1 hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10 comment-btn">
+                  <i class="fa fa-comment-o"></i>
+                  <span class="comment-count">89</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-green-500 transition-colors p-2 rounded-full hover:bg-green-500/10">
+                  <i class="fa fa-retweet"></i>
+                  <span>56</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-500/10 like-btn">
+                  <i class="fa fa-heart-o"></i>
+                  <span>324</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10">
+                  <i class="fa fa-share"></i>
+                </button>
+              </div>
+              
+              <!-- 评论区容器 -->
+              <div class="comments-container mt-4 border-t pt-4 hidden">
+                <div class="flex space-x-2 mb-4">
+                  <img src="https://picsum.photos/200/200?random=1" alt="用户头像" class="w-8 h-8 rounded-full object-cover">
+                  <div class="flex-grow">
+                    <input type="text" placeholder="添加评论..." class="w-full border border-gray-200 rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all text-sm comment-input">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+        
+        <!-- 微博3 - 多张图片 -->
+        <article class="bg-white rounded-xl shadow-sm p-4 card-hover" data-id="3">
+          <div class="flex space-x-3">
+            <img src="https://picsum.photos/200/200?random=6" alt="用户头像" class="w-10 h-10 rounded-full object-cover">
+            <div class="flex-grow">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="font-medium">摄影师小李</h3>
+                  <p class="text-secondary text-sm">@photographer_li · 3天前</p>
+                </div>
+                <button class="text-secondary hover:text-dark transition-colors">
+                  <i class="fa fa-ellipsis-h"></i>
+                </button>
+              </div>
+              
+              <div class="mt-2">
+                <p>周末去海边拍的一组照片，天气特别好，海水蓝得像宝石一样。分享给大家～ #海边摄影# #自然风光#</p>
+                
+                <!-- 多张图片 -->
+                <div class="mt-3 grid grid-cols-2 gap-2 rounded-xl overflow-hidden">
+                  <div class="cursor-pointer group">
+                    <img src="https://picsum.photos/400/400?random=11" alt="海边照片1" 
+                         class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105">
+                  </div>
+                  <div class="cursor-pointer group">
+                    <img src="https://picsum.photos/400/400?random=12" alt="海边照片2" 
+                         class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105">
+                  </div>
+                  <div class="cursor-pointer group">
+                    <img src="https://picsum.photos/400/400?random=13" alt="海边照片3" 
+                         class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105">
+                  </div>
+                  <div class="cursor-pointer group relative">
+                    <img src="https://picsum.photos/400/400?random=14" alt="海边照片4" 
+                         class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105">
+                    <div class="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-medium">
+                      +2
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mt-3 flex justify-between text-secondary">
+                <button class="flex items-center space-x-1 hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10 comment-btn">
+                  <i class="fa fa-comment-o"></i>
+                  <span class="comment-count">156</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-green-500 transition-colors p-2 rounded-full hover:bg-green-500/10">
+                  <i class="fa fa-retweet"></i>
+                  <span>98</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-500/10 like-btn">
+                  <i class="fa fa-heart-o"></i>
+                  <span>752</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10">
+                  <i class="fa fa-share"></i>
+                </button>
+              </div>
+              
+              <!-- 评论区容器 -->
+              <div class="comments-container mt-4 border-t pt-4 hidden">
+                <div class="flex space-x-2 mb-4">
+                  <img src="https://picsum.photos/200/200?random=1" alt="用户头像" class="w-8 h-8 rounded-full object-cover">
+                  <div class="flex-grow">
+                    <input type="text" placeholder="添加评论..." class="w-full border border-gray-200 rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all text-sm comment-input">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+      
+      <!-- 加载更多 -->
+      <div class="text-center mt-8 mb-4">
+        <button id="load-more" class="bg-white border border-gray-200 hover:bg-light text-dark px-6 py-2 rounded-full transition-colors font-medium flex items-center mx-auto">
+          <span>加载更多</span>
+          <i class="fa fa-refresh ml-2"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 右侧边栏 - 热门话题和推荐 -->
+    <aside class="hidden lg:block w-80 flex-shrink-0">
+      <!-- 搜索框 -->
+      <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
+        <div class="relative">
+          <input type="text" placeholder="搜索微博、用户..." 
+                 class="w-full py-2 px-4 pl-10 rounded-full bg-light focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all">
+          <i class="fa fa-search absolute left-4 top-1/2 -translate-y-1/2 text-secondary"></i>
+        </div>
+      </div>
+      
+      <!-- 热门话题 -->
+      <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-lg">热门话题</h3>
+          <a href="#" class="text-secondary hover:text-primary transition-colors">
+            <i class="fa fa-refresh"></i>
+          </a>
+        </div>
+        
+        <div class="space-y-4">
+          <!-- 话题1 -->
+          <div class="cursor-pointer hover:bg-light p-2 rounded-lg transition-colors">
+            <p class="text-secondary text-sm">热搜 · 128万讨论</p>
+            <p class="font-medium">2024年最新科技产品发布会</p>
+          </div>
+          
+          <!-- 话题2 -->
+          <div class="cursor-pointer hover:bg-light p-2 rounded-lg transition-colors">
+            <p class="text-secondary text-sm">热搜 · 86万讨论</p>
+            <p class="font-medium">全国大学生创新创业大赛圆满结束</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+  
+  <!-- 图片查看器模态框 -->
+  <div id="image-viewer" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
+    <button id="close-viewer" class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 transition-colors">
+      <i class="fa fa-times"></i>
+    </button>
+    <img id="viewer-image" src="" alt="大图预览" class="max-w-[90%] max-h-[90vh] object-contain">
+  </div>
+  
+  <!-- 编辑资料模态框 -->
+  <div id="edit-profile-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 scale-in">
+      <div class="modal-header p-5 border-b flex justify-between items-center">
+        <h3 class="font-bold text-xl">编辑个人资料</h3>
+        <button id="close-edit-modal" class="text-secondary hover:text-dark transition-colors">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <div class="p-5">
+        <form id="edit-profile-form">
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">用户名</label>
+            <input type="text" id="edit-name" class="w-full border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" value="张小明">
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">个人简介</label>
+            <textarea id="edit-bio" rows="3" class="w-full border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" placeholder="介绍一下自己吧">热爱生活，喜欢旅行和摄影，分享美好生活瞬间。</textarea>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">个人标签</label>
+            <input type="text" id="edit-tags" class="w-full border border-gray-200 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" placeholder="用逗号分隔标签，如：旅行,摄影">
+          </div>
+          
+          <div class="flex justify-end gap-3">
+            <button type="button" id="cancel-edit" class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-light transition-colors">取消</button>
+            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">保存更改</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 相机/图片选择模态框 -->
+  <div id="camera-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 scale-in">
+      <div class="modal-header p-5 border-b flex justify-between items-center">
+        <h3 class="font-bold text-xl">选择图片</h3>
+        <button id="close-camera-modal" class="text-secondary hover:text-dark transition-colors">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <div class="p-5">
+        <div class="flex flex-col items-center gap-4">
+          <!-- 相机选项 -->
+          <label class="cursor-pointer w-full py-6 bg-light rounded-lg flex flex-col items-center justify-center hover:bg-gray-100 transition-colors">
+            <i class="fa fa-camera text-4xl text-primary mb-2"></i>
+            <span class="font-medium">拍摄照片</span>
+            <input type="file" accept="image/*" capture="environment" class="hidden camera-capture">
+          </label>
+          
+          <!-- 相册选项 -->
+          <label class="cursor-pointer w-full py-6 bg-light rounded-lg flex flex-col items-center justify-center hover:bg-gray-100 transition-colors">
+            <i class="fa fa-image text-4xl text-primary mb-2"></i>
+            <span class="font-medium">从相册选择</span>
+            <input type="file" accept="image/*" multiple class="hidden photo-select">
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 底部导航（仅移动端显示） -->
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-2 z-40">
+    <a href="#" class="flex flex-col items-center text-primary">
+      <i class="fa fa-home text-xl"></i>
+      <span class="text-xs mt-1">首页</span>
+    </a>
+    <a href="#" class="flex flex-col items-center text-secondary">
+      <i class="fa fa-compass text-xl"></i>
+      <span class="text-xs mt-1">发现</span>
+    </a>
+    <a href="#" class="flex flex-col items-center">
+      <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white -mt-5 shadow-lg">
+        <i class="fa fa-plus text-xl"></i>
+      </div>
+    </a>
+    <a href="#" class="flex flex-col items-center text-secondary">
+      <i class="fa fa-bell-o text-xl"></i>
+      <span class="text-xs mt-1">通知</span>
+    </a>
+    <a href="#" class="flex flex-col items-center text-secondary">
+      <i class="fa fa-user-o text-xl"></i>
+      <span class="text-xs mt-1">我的</span>
+    </a>
+  </nav>
+  
+  
+
+  <script>
+    // 导航栏滚动效果
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 10) {
+        navbar.classList.add('py-2', 'shadow');
+        navbar.classList.remove('py-3', 'shadow-sm');
+      } else {
+        navbar.classList.add('py-3', 'shadow-sm');
+        navbar.classList.remove('py-2', 'shadow');
+      }
+    });
+    
+    // 评论区交互功能
+    const weiboFeed = document.getElementById('weibo-feed');
+    
+    // 切换评论区显示/隐藏
+    weiboFeed.addEventListener('click', (e) => {
+      if (e.target.closest('.comment-btn')) {
+        const btn = e.target.closest('.comment-btn');
+        const commentsContainer = btn.closest('article').querySelector('.comments-container');
+        
+        // 切换显示状态
+        if (commentsContainer.classList.contains('hidden')) {
+          commentsContainer.classList.remove('hidden');
+          commentsContainer.classList.add('scale-in');
+        } else {
+          commentsContainer.classList.add('hidden');
+        }
+      }
+    });
+    
+    // 发布评论
+    weiboFeed.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.classList.contains('comment-input')) {
+        const input = e.target;
+        const commentText = input.value.trim();
+        
+        if (commentText) {
+          const commentsList = input.closest('.comments-container').querySelector('.comments-list') || 
+                             input.closest('.comments-container');
+          const commentCount = input.closest('article').querySelector('.comment-count');
+          
+          // 创建新评论元素
+          const newComment = document.createElement('div');
+          newComment.className = 'flex space-x-2 scale-in';
+          newComment.innerHTML = `
+            <img src="https://picsum.photos/200/200?random=1" alt="评论用户" class="w-8 h-8 rounded-full object-cover">
+            <div class="flex-grow bg-light rounded-xl p-3">
+              <div class="flex justify-between">
+                <h4 class="font-medium text-sm">张小明</h4>
+                <span class="text-secondary text-xs">刚刚</span>
+              </div>
+              <p class="text-sm mt-1">${commentText}</p>
+              <div class="flex space-x-4 mt-2">
+                <button class="text-secondary hover:text-primary text-xs transition-colors reply-btn">回复</button>
+                <button class="text-secondary hover:text-red-500 text-xs transition-colors comment-like-btn">点赞 (0)</button>
+              </div>
+              
+              <!-- 回复框 -->
+              <div class="mt-2 flex space-x-2 reply-container hidden">
+                <img src="https://picsum.photos/200/200?random=1" alt="用户头像" class="w-6 h-6 rounded-full object-cover">
+                <div class="flex-grow">
+                  <input type="text" placeholder="回复..." class="w-full border border-gray-200 rounded-full p-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all text-xs reply-input">
+                </div>
+              </div>
+            </div>
+          `;
+          
+          // 添加到评论列表顶部
+          if (commentsList.querySelector('.replies-list')) {
+            commentsList.insertBefore(newComment, commentsList.firstChild);
+          } else {
+            commentsList.appendChild(newComment);
+          }
+          
+          // 更新评论数
+          commentCount.textContent = parseInt(commentCount.textContent) + 1;
+          
+          // 清空输入框
+          input.value = '';
+        }
+      }
+    });
+    
+    // 回复功能
+    weiboFeed.addEventListener('click', (e) => {
+      if (e.target.classList.contains('reply-btn')) {
+        const replyBtn = e.target;
+        const replyContainer = replyBtn.closest('div').nextElementSibling;
+        
+        // 切换回复框显示状态
+        if (replyContainer) {
+          replyContainer.classList.toggle('hidden');
+          
+          // 如果显示回复框，自动聚焦
+          if (!replyContainer.classList.contains('hidden')) {
+            replyContainer.querySelector('.reply-input').focus();
+          }
+        }
+      }
+    });
+    
+    // 发布回复
+    weiboFeed.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.classList.contains('reply-input')) {
+        const input = e.target;
+        const replyText = input.value.trim();
+        
+        if (replyText) {
+          const commentDiv = input.closest('div[class*="bg-light"]');
+          const replyTo = commentDiv.querySelector('h4')?.textContent;
+          
+          // 检查是否已有回复列表，没有则创建
+          let repliesList = commentDiv.querySelector('.replies-list');
+          if (!repliesList) {
+            repliesList = document.createElement('div');
+            repliesList.className = 'mt-3 ml-6 space-y-3 replies-list';
+            commentDiv.appendChild(repliesList);
+          }
+          
+          // 创建新回复元素
+          const newReply = document.createElement('div');
+          newReply.className = 'flex space-x-2 scale-in';
+          newReply.innerHTML = `
+            <img src="https://picsum.photos/200/200?random=1" alt="回复用户" class="w-6 h-6 rounded-full object-cover">
+            <div class="flex-grow bg-white rounded-xl p-2">
+              <p class="text-sm"><span class="font-medium">张小明</span> ${replyTo ? `回复 <span class="font-medium">${replyTo}</span>` : ''}：${replyText}</p>
+            </div>
+          `;
+          
+          // 添加到回复列表
+          repliesList.appendChild(newReply);
+          
+          // 清空并隐藏回复框
+          input.value = '';
+          input.closest('.reply-container').classList.add('hidden');
+        }
+      }
+    });
+    
+    // 评论点赞功能
+    weiboFeed.addEventListener('click', (e) => {
+      if (e.target.classList.contains('comment-like-btn')) {
+        const likeBtn = e.target;
+        const text = likeBtn.textContent;
+        const countMatch = text.match(/\d+/);
+        
+        if (countMatch) {
+          let count = parseInt(countMatch[0]);
+          
+          // 切换点赞状态
+          if (likeBtn.classList.contains('text-red-500')) {
+            likeBtn.classList.remove('text-red-500');
+            count--;
+          } else {
+            likeBtn.classList.add('text-red-500');
+            count++;
+          }
+          
+          // 更新点赞数
+          likeBtn.textContent = `点赞 (${count})`;
+        }
+      }
+    });
+    
+    // 微博点赞功能
+    weiboFeed.addEventListener('click', (e) => {
+      if (e.target.closest('.like-btn')) {
+        const likeBtn = e.target.closest('.like-btn');
+        const icon = likeBtn.querySelector('i');
+        const countSpan = likeBtn.querySelector('span');
+        
+        // 切换点赞状态
+        if (icon.classList.contains('fa-heart-o')) {
+          icon.classList.remove('fa-heart-o');
+          icon.classList.add('fa-heart');
+          likeBtn.classList.add('text-red-500');
+          countSpan.textContent = parseInt(countSpan.textContent) + 1;
+          
+          // 添加点赞动画
+          const heart = document.createElement('span');
+          heart.innerHTML = '<i class="fa fa-heart text-red-500"></i>';
+          heart.className = 'absolute text-2xl opacity-0 transform scale-0';
+          likeBtn.appendChild(heart);
+          
+          setTimeout(() => {
+            heart.classList.add('transition-all', 'duration-500', 'opacity-100', 'scale-150', 'translate-y-[-20px]');
+          }, 10);
+          
+          setTimeout(() => {
+            heart.remove();
+          }, 600);
+        } else {
+          icon.classList.remove('fa-heart');
+          icon.classList.add('fa-heart-o');
+          likeBtn.classList.remove('text-red-500');
+          countSpan.textContent = parseInt(countSpan.textContent) - 1;
+        }
+      }
+    });
+    
+    // 编辑资料功能
+    const editProfileBtns = document.querySelectorAll('.edit-profile-btn');
+    const editProfileModal = document.getElementById('edit-profile-modal');
+    const closeEditModal = document.getElementById('close-edit-modal');
+    const cancelEdit = document.getElementById('cancel-edit');
+    const editProfileForm = document.getElementById('edit-profile-form');
+    const profileName = document.querySelector('.profile-name');
+    const profileBio = document.querySelector('.profile-bio');
+    
+    // 打开编辑资料模态框
+    editProfileBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        editProfileModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      });
+    });
+    
+    // 关闭编辑资料模态框
+    function closeEditProfileModal() {
+      editProfileModal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+    
+    closeEditModal.addEventListener('click', closeEditProfileModal);
+    cancelEdit.addEventListener('click', closeEditProfileModal);
+    
+    // 点击模态框外部关闭
+    editProfileModal.addEventListener('click', (e) => {
+      if (e.target === editProfileModal) {
+        closeEditProfileModal();
+      }
+    });
+    
+    // 保存资料修改
+    editProfileForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const newName = document.getElementById('edit-name').value.trim();
+      const newBio = document.getElementById('edit-bio').value.trim();
+      
+      // 更新显示的资料
+      if (newName) {
+        profileName.textContent = newName;
+      }
+      
+      if (newBio) {
+        profileBio.textContent = newBio;
+      } else {
+        profileBio.textContent = '暂无简介';
+      }
+      
+      // 显示保存成功提示
+      const saveBtn = editProfileForm.querySelector('button[type="submit"]');
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = '保存成功！';
+      
+      setTimeout(() => {
+        closeEditProfileModal();
+        saveBtn.textContent = originalText;
+      }, 1000);
+    });
+    
+    // 相机/图片上传功能
+    const cameraInput = document.querySelector('.camera-input');
+    const cameraModal = document.getElementById('camera-modal');
+    const closeCameraModal = document.getElementById('close-camera-modal');
+    const cameraCapture = document.querySelector('.camera-capture');
+    const photoSelect = document.querySelector('.photo-select');
+    const previewImages = document.querySelector('.preview-images');
+    const postBtn = document.querySelector('.post-btn');
+    const postContent = document.querySelector('.post-content');
+    
+    // 打开相机模态框
+    cameraInput.addEventListener('click', (e) => {
+      e.preventDefault();
+      cameraModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    });
+    
+    // 关闭相机模态框
+    function closeCameraModalFunc() {
+      cameraModal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+    
+    closeCameraModal.addEventListener('click', closeCameraModalFunc);
+    
+    cameraModal.addEventListener('click', (e) => {
+      if (e.target === cameraModal) {
+        closeCameraModalFunc();
+      }
+    });
+    
+    // 处理相机拍摄或相册选择的图片
+    function handleImageFiles(files) {
+      if (files && files.length) {
+        // 显示预览区域
+        previewImages.classList.remove('hidden');
+        
+        // 预览图片
+        Array.from(files).forEach(file => {
+          const reader = new FileReader();
+          
+          reader.onload = (e) => {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'relative w-20 h-20 rounded-lg overflow-hidden scale-in';
+            
+            previewItem.innerHTML = `
+              <img src="${e.target.result}" alt="预览图" class="w-full h-full object-cover">
+              <button class="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 transition-colors remove-image">
+                <i class="fa fa-times text-xs"></i>
+              </button>
+            `;
+            
+            previewImages.appendChild(previewItem);
+          };
+          
+          reader.readAsDataURL(file);
+        });
+        
+        // 关闭相机模态框
+        closeCameraModalFunc();
+      }
+    }
+    
+    // 相机拍摄
+    cameraCapture.addEventListener('change', (e) => {
+      handleImageFiles(e.target.files);
+      // 重置input值，允许重复选择同一张图片
+      e.target.value = '';
+    });
+    
+    // 相册选择
+    photoSelect.addEventListener('change', (e) => {
+      handleImageFiles(e.target.files);
+      e.target.value = '';
+    });
+    
+    // 删除预览图片
+    previewImages.addEventListener('click', (e) => {
+      if (e.target.closest('.remove-image')) {
+        const previewItem = e.target.closest('.relative');
+        previewItem.remove();
+        
+        // 如果没有预览图片了，隐藏预览区域
+        if (previewImages.children.length === 0) {
+          previewImages.classList.add('hidden');
+        }
+      }
+    });
+    
+    // 发布微博
+    postBtn.addEventListener('click', () => {
+      const content = postContent.value.trim();
+      const hasImages = previewImages.children.length > 0;
+      
+      if (!content && !hasImages) {
+        alert('请输入内容或选择图片');
+        return;
+      }
+      
+      // 模拟发布成功
+      postBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>发布中...';
+      
+      setTimeout(() => {
+        // 清空内容和预览
+        postContent.value = '';
+        previewImages.innerHTML = '';
+        previewImages.classList.add('hidden');
+        
+        // 恢复按钮状态
+        postBtn.textContent = '发布';
+        
+        // 显示成功提示
+        const successToast = document.createElement('div');
+        successToast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 scale-in';
+        successToast.textContent = '微博发布成功！';
+        document.body.appendChild(successToast);
+        
+        setTimeout(() => {
+          successToast.remove();
+        }, 2000);
+      }, 1500);
+    });
+    
+    // 更换头像和封面
+    const changeAvatarBtn = document.querySelector('.change-avatar-btn');
+    const changeCoverBtn = document.querySelector('.change-cover-btn');
+    const profileAvatar = document.querySelector('.profile-avatar');
+    
+    // 更换头像
+    changeAvatarBtn.addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      
+      input.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          const reader = new FileReader();
+          
+          reader.onload = (e) => {
+            profileAvatar.src = e.target.result;
+          };
+          
+          reader.readAsDataURL(e.target.files[0]);
+        }
+      });
+      
+      input.click();
+    });
+    
+    // 更换封面
+    changeCoverBtn.addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      
+      input.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          const reader = new FileReader();
+          const coverDiv = changeCoverBtn.closest('div[class*="bg-gradient-to-r"]');
+          
+          reader.onload = (e) => {
+            coverDiv.style.background = `url(${e.target.result}) center/cover`;
+          };
+          
+          reader.readAsDataURL(e.target.files[0]);
+        }
+      });
+      
+      input.click();
+    });
+    
+    // 图片查看器功能
+    const imageViewer = document.getElementById('image-viewer');
+    const viewerImage = document.getElementById('viewer-image');
+    const closeViewer = document.getElementById('close-viewer');
+    const images = document.querySelectorAll('#weibo-feed img[alt]');
+    
+    images.forEach(img => {
+      if (!img.closest('aside') && !img.closest('header')) {
+        img.addEventListener('click', () => {
+          viewerImage.src = img.src;
+          imageViewer.classList.remove('hidden');
+          document.body.style.overflow = 'hidden';
+        });
+      }
+    });
+    
+    closeViewer.addEventListener('click', () => {
+      imageViewer.classList.add('hidden');
+      document.body.style.overflow = '';
+    });
+    
+    imageViewer.addEventListener('click', (e) => {
+      if (e.target === imageViewer) {
+        imageViewer.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+    });
+    
+    // 加载更多微博
+    const loadMoreBtn = document.getElementById('load-more');
+    
+    loadMoreBtn.addEventListener('click', () => {
+      loadMoreBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i><span>加载中...</span>';
+      
+      setTimeout(() => {
+        const newWeibo = document.createElement('article');
+        newWeibo.className = 'bg-white rounded-xl shadow-sm p-4 card-hover opacity-0 transform translate-y-4 transition-all duration-500';
+        newWeibo.setAttribute('data-id', Math.floor(Math.random() * 1000));
+        newWeibo.innerHTML = `
+          <div class="flex space-x-3">
+            <img src="https://picsum.photos/200/200?random=${Math.floor(Math.random() * 100)}" alt="用户头像" class="w-10 h-10 rounded-full object-cover">
+            <div class="flex-grow">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="font-medium">新用户${Math.floor(Math.random() * 1000)}</h3>
+                  <p class="text-secondary text-sm">@newuser${Math.floor(Math.random() * 10000)} · 刚刚</p>
+                </div>
+                <button class="text-secondary hover:text-dark transition-colors">
+                  <i class="fa fa-ellipsis-h"></i>
+                </button>
+              </div>
+              
+              <div class="mt-2">
+                <p>这是一条新加载的微博内容，展示了动态加载功能。使用JavaScript可以实现无限滚动效果，提升用户体验。#动态加载# #前端开发#</p>
+                
+                <div class="mt-3 rounded-xl overflow-hidden cursor-pointer group">
+                  <img src="https://picsum.photos/800/500?random=${Math.floor(Math.random() * 1000)}" alt="微博图片" 
+                       class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105">
+                </div>
+              </div>
+              
+              <div class="mt-3 flex justify-between text-secondary">
+                <button class="flex items-center space-x-1 hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10 comment-btn">
+                  <i class="fa fa-comment-o"></i>
+                  <span class="comment-count">${Math.floor(Math.random() * 100)}</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-green-500 transition-colors p-2 rounded-full hover:bg-green-500/10">
+                  <i class="fa fa-retweet"></i>
+                  <span>${Math.floor(Math.random() * 50)}</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-500/10 like-btn">
+                  <i class="fa fa-heart-o"></i>
+                  <span>${Math.floor(Math.random() * 200)}</span>
+                </button>
+                <button class="flex items-center space-x-1 hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10">
+                  <i class="fa fa-share"></i>
+                </button>
+              </div>
+              
+              <!-- 评论区容器 -->
+              <div class="comments-container mt-4 border-t pt-4 hidden">
+                <div class="flex space-x-2 mb-4">
+                  <img src="https://picsum.photos/200/200?random=1" alt="用户头像" class="w-8 h-8 rounded-full object-cover">
+                  <div class="flex-grow">
+                    <input type="text" placeholder="添加评论..." class="w-full border border-gray-200 rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all text-sm comment-input">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        weiboFeed.appendChild(newWeibo);
+        setTimeout(() => {
+          newWeibo.classList.remove('opacity-0', 'translate-y-4');
+        }, 10);
+        
+        loadMoreBtn.innerHTML = '<span>加载更多</span><i class="fa fa-refresh ml-2"></i>';
+      }, 1500);
+    });
+
+    //向后端提交数据
+    // 1. 确保createWeiboElement函数正确生成DOM元素
+function createWeiboElement(data) {
+  const weibo = document.createElement('article');
+  // 关键：添加基础样式+初始动画类（透明+偏移）
+  weibo.className = 'bg-white rounded-xl shadow-sm p-4 card-hover opacity-0 transform translate-y-4 transition-all duration-500';
+  weibo.setAttribute('data-id', data.id);
+
+  // 确保内容结构完整，特别是用户信息和发布时间
+  weibo.innerHTML = `
+    <div class="flex space-x-3">
+      <img src="${data.user.avatar || '默认头像地址'}" alt="用户头像" class="w-10 h-10 rounded-full object-cover">
+      <div class="flex-grow">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-medium">${data.user.username}</h3>
+            <p class="text-secondary text-sm">@${data.user.username} · ${formatTime(data.createdAt)}</p>
+          </div>
+          <button class="text-secondary hover:text-dark transition-colors">
+            <i class="fa fa-ellipsis-h"></i>
+          </button>
+        </div>
+        
+        <div class="mt-2">
+          <p>${data.content || ''}</p>
+          
+          ${data.images && data.images.length > 0 ? `
+            <div class="mt-3 rounded-xl overflow-hidden cursor-pointer group">
+              <img src="${data.images[0]}" alt="微博图片" 
+                   class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105">
+            </div>
+          ` : ''}
+        </div>
+        
+        <!-- 互动按钮区域 -->
+        <div class="mt-3 flex justify-between text-secondary">
+          <button class="flex items-center space-x-1 hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10 comment-btn">
+            <i class="fa fa-comment-o"></i>
+            <span>${data.commentCount}</span>
+          </button>
+          <button class="flex items-center space-x-1 hover:text-green-500 transition-colors p-2 rounded-full hover:bg-green-500/10">
+            <i class="fa fa-retweet"></i>
+            <span>${data.repostCount}</span>
+          </button>
+          <button class="flex items-center space-x-1 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-500/10 like-btn">
+            <i class="fa fa-heart-o"></i>
+            <span>${data.likeCount}</span>
+          </button>
+          <button class="flex items-center space-x-1 hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10">
+            <i class="fa fa-share"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  return weibo;
+}
+
+// 2. 修复发布成功后的显示逻辑
+async function handlePublish() {
+  // ...（省略登录校验和内容校验逻辑）
+
+  try {
+    // ...（省略表单数据准备和接口请求逻辑）
+
+    if (response.ok && result.success) {
+      showToast('微博发布成功！', 'success');
+      
+      // 清空发布框和预览区
+      postContent.value = '';
+      previewContainer.innerHTML = '';
+      previewContainer.classList.add('hidden');
+      
+      // 关键：验证后端返回数据是否完整
+      if (!result.data || !result.data.id) {
+        throw new Error('发布成功，但返回数据不完整');
+      }
+      
+      // 创建新微博元素（确保数据完整）
+      const newWeibo = createWeiboElement({
+        id: result.data.id,
+        content: content,
+        images: result.data.images || [],
+        user: {
+          username: userStore.userInfo.username,
+          avatar: userStore.userInfo.avatar
+        },
+        createdAt: new Date().toISOString(),
+        commentCount: 0,
+        repostCount: 0,
+        likeCount: 0
+      });
+      
+      // 关键：确认容器存在且正确插入
+      const feedContainer = document.getElementById('weibo-feed');
+      if (!feedContainer) {
+        throw new Error('未找到微博列表容器');
+      }
+      
+      // 插入到列表顶部
+      feedContainer.insertBefore(newWeibo, feedContainer.firstChild);
+      
+      // 关键：确保动画类名被移除（元素可见）
+      setTimeout(() => {
+        newWeibo.classList.remove('opacity-0', 'translate-y-4');
+        // 强制重绘（解决偶尔的动画不触发问题）
+        newWeibo.offsetHeight; 
+      }, 10);
+
+    } else {
+      throw new Error(result.message || '发布失败，请重试');
+    }
+
+  } catch (error) {
+    console.error('发布失败详情：', error); // 控制台输出错误，便于调试
+    showToast(error.message, 'error');
+  } finally {
+    postBtn.textContent = '发布';
+    postBtn.disabled = false;
+  }
+}
+
+
+
+
+  </script>
+</body>
+</html>
